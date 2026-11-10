@@ -1,0 +1,34 @@
+{
+  "name": "agent-crashtest",
+  "version": "0.1.0",
+  "description": "Replay real AI coding agent disasters against your own Claude Code setup. Nothing is executed.",
+  "type": "module",
+  "bin": {
+    "crashtest": "bin/crashtest.js",
+    "agent-crashtest": "bin/crashtest.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "guard",
+    "incidents"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "museum": "node bin/crashtest.js museum"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "claude-code",
+    "ai-agents",
+    "coding-agents",
+    "safety",
+    "hooks",
+    "permissions",
+    "guardrails"
+  ],
+  "author": "Salman Moussa",
+  "license": "MIT"
+}
