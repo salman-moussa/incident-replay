@@ -1,0 +1,45 @@
+{
+  "id": "claude-code-git-discard",
+  "date": "2026-01",
+  "agent": "Claude Code",
+  "title": "Uncommitted work thrown away by a git command",
+  "summary": "A steady run of bug reports describes the same loss: while fixing or rolling something back, the agent ran a git command that resets the working tree, and hours or days of uncommitted work disappeared. Work that was never committed cannot be brought back from git history.",
+  "lesson": "Commit before you let an agent work, and make the discarding git commands ask first.",
+  "sources": [
+    { "title": "Issue 16098: reverted uncommitted work while debugging", "url": "https://claudeissues.com/issue/16098-claude-code-incorrectly-reverted-users-uncommitted-work-while-debugging" },
+    { "title": "Issue 7232: git reset --hard without authorization", "url": "https://claudeissues.com/issue/7232-model-critical-claude-executed-git-reset-hard-without-authorization-causing-data" },
+    { "title": "Issue 33850: two days of uncommitted work destroyed", "url": "https://claudeissues.com/issue/33850-agent-destroyed-2-days-of-uncommitted-work-via-destructive-git-operation-in-main" }
+  ],
+  "scenarios": [
+    {
+      "id": "reset-hard",
+      "command": "git reset --hard",
+      "kind": "reported",
+      "note": "As named in the reports."
+    },
+    {
+      "id": "checkout-dot",
+      "command": "git checkout -- .",
+      "kind": "reported",
+      "note": "As named in the reports."
+    },
+    {
+      "id": "reset-hard-dash-c",
+      "command": "git -C . reset --hard HEAD",
+      "kind": "variant",
+      "note": "An option before the subcommand gets past a rule written for git reset."
+    },
+    {
+      "id": "restore-dot",
+      "command": "git restore .",
+      "kind": "variant",
+      "note": "The newer spelling of the same discard."
+    },
+    {
+      "id": "clean",
+      "command": "git clean -fdx",
+      "kind": "variant",
+      "note": "Deletes every untracked and ignored file, including .env files."
+    }
+  ]
+}

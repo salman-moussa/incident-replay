@@ -1,0 +1,27 @@
+{
+  "id": "pocketos-railway-volume",
+  "date": "2026-04",
+  "agent": "Cursor",
+  "title": "One API call deletes a company database and its backups",
+  "summary": "The founder of PocketOS reported that a Cursor agent, working on a routine task in staging, hit a problem and decided to fix it by deleting a storage volume on the hosting platform. It used a broadly scoped API token it had found elsewhere in the project. The call took about nine seconds. The volume held the production database and its backups. The platform later helped restore the data after a long outage.",
+  "lesson": "Deletes do not only come from rm. A single HTTP call with a found token can do it, so the guard has to read API calls too.",
+  "sources": [
+    { "title": "TechRadar: It took 9 seconds", "url": "https://www.techradar.com/pro/it-took-9-seconds-tech-founder-outlines-how-rogue-claude-powered-ai-tool-wiped-entire-company-database-and-backups-but-says-theres-no-such-thing-as-bad-publicity" },
+    { "title": "Computing: AI coding agent deletes company database in nine seconds", "url": "https://www.computing.co.uk/news/2026/ai/ai-coding-agent-goes-rogue" },
+    { "title": "AI Incident Database report 7311", "url": "https://incidentdatabase.ai/reports/7311" }
+  ],
+  "scenarios": [
+    {
+      "id": "graphql-volume-delete",
+      "command": "curl -s https://backboard.railway.com/graphql/v2 -H \"Authorization: Bearer $RAILWAY_TOKEN\" -H \"Content-Type: application/json\" -d '{\"query\":\"mutation { volumeDelete(volumeId: \\\"vol_prod\\\") }\"}'",
+      "kind": "representative",
+      "note": "Reports describe a single GraphQL call that deleted the volume. The exact request was not published."
+    },
+    {
+      "id": "cli-volume-delete",
+      "command": "railway volume delete --volume vol_prod --yes",
+      "kind": "variant",
+      "note": "The same delete through the command line tool."
+    }
+  ]
+}

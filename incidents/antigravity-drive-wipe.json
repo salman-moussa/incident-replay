@@ -1,0 +1,34 @@
+{
+  "id": "antigravity-drive-wipe",
+  "date": "2025-11",
+  "agent": "Google Antigravity",
+  "title": "A cache cleanup wipes an entire drive",
+  "summary": "A developer asked the agent in Google Antigravity to clear a project cache. The agent ran a quiet recursive delete, but the path pointed at the root of the D: drive instead of the cache folder. The quiet flag skipped the Recycle Bin, so the files were gone for good. The agent apologised at length. Google said it was investigating.",
+  "lesson": "A delete aimed at a drive root should never run unattended. The path is the whole difference between a cleanup and a wipe.",
+  "sources": [
+    { "title": "The Register: Google Antigravity wipes D drive", "url": "https://www.theregister.com/2025/12/01/google_antigravity_wipes_d_drive/" },
+    { "title": "AI Incident Database incident 1433", "url": "https://incidentdatabase.ai/cite/1433/" },
+    { "title": "GIGAZINE: AI agent wipes a user's hard drive without permission", "url": "https://gigazine.net/gsc_news/en/20251205-ai-pc-data-delete" }
+  ],
+  "scenarios": [
+    {
+      "id": "rmdir-drive-root",
+      "command": "rmdir /s /q d:\\",
+      "kind": "reported",
+      "note": "The command as reported."
+    },
+    {
+      "id": "cmd-wrapped",
+      "command": "cmd /c \"rmdir /s /q d:\\\"",
+      "kind": "variant",
+      "note": "The same command passed through cmd."
+    },
+    {
+      "id": "powershell-remove-item",
+      "tool": "PowerShell",
+      "command": "Remove-Item -Recurse -Force D:\\",
+      "kind": "variant",
+      "note": "The same delete in PowerShell."
+    }
+  ]
+}

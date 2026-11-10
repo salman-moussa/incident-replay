@@ -1,0 +1,34 @@
+{
+  "id": "cursor-yolo-deletions",
+  "date": "2025-06",
+  "agent": "Cursor",
+  "title": "Auto-run mode deletes far more than the project",
+  "summary": "Several Cursor users reported that an agent in auto-run (YOLO) mode ran recursive deletes that reached past the project: a neighbouring folder in one report, the home folder in others. One thread title quotes the command, a normal cleanup with the home folder added as one more argument. A security firm also showed that the built-in delete protections were easy to get around in that mode.",
+  "lesson": "In auto-run mode the only thing between a typo and your home folder is a rule that reads the command. Have one.",
+  "sources": [
+    { "title": "Cursor forum: YOLO deleted everything in my computer", "url": "https://forum.cursor.com/t/cursor-yolo-deleted-everything-in-my-computer/103131" },
+    { "title": "Cursor forum: agent executes rm -rf ~ during a development session", "url": "https://forum.cursor.com/t/cursor-ai-executes-destructive-command-rm-rf-during-development-session/129401" },
+    { "title": "Cursor forum: rm -rf deleted files from a parallel subdirectory", "url": "https://forum.cursor.com/t/cursor-ai-agent-used-rm-rf-to-delete-files-from-a-parallel-subdirectory/44742" },
+    { "title": "The Register: Cursor YOLO mode safeguards easily bypassed", "url": "https://www.theregister.com/2025/07/21/cursor_ai_safeguards_easily_bypassed/" }
+  ],
+  "scenarios": [
+    {
+      "id": "folder-plus-home",
+      "command": "rm -rf /that-folder ~/",
+      "kind": "reported",
+      "note": "As quoted in a forum thread title."
+    },
+    {
+      "id": "home",
+      "command": "rm -rf ~",
+      "kind": "reported",
+      "note": "As quoted in a forum thread title."
+    },
+    {
+      "id": "sibling-folder",
+      "command": "rm -rf ../shared-assets",
+      "kind": "representative",
+      "note": "A recursive delete that leaves the project folder."
+    }
+  ]
+}

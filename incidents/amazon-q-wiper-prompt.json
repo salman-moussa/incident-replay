@@ -1,0 +1,39 @@
+{
+  "id": "amazon-q-wiper-prompt",
+  "date": "2025-07-17",
+  "agent": "Amazon Q Developer",
+  "title": "A wiper prompt shipped inside an official extension",
+  "summary": "Someone slipped a prompt into the Amazon Q extension for VS Code through a pull request. It told the agent to clean the system to a near-factory state and delete file system and cloud resources. The prompt shipped in a public release of an extension with hundreds of thousands of installs. AWS said a mistake in the prompt stopped it from running and that no customer resources were affected.",
+  "lesson": "The instruction does not have to come from you. A guard that only trusts the prompt is no guard. Cloud deletes must be stopped at the command.",
+  "sources": [
+    { "title": "The Register: Compromised Amazon Q extension told AI to delete everything", "url": "https://www.theregister.com/2025/07/24/amazon_q_ai_prompt/" },
+    { "title": "Tom's Hardware: Hacker injects disk-wiping prompt into Amazon's AI coding assistant", "url": "https://www.tomshardware.com/tech-industry/cyber-security/hacker-injects-malicious-potentially-disk-wiping-prompt-into-amazons-ai-coding-assistant-with-a-simple-pull-request-told-your-goal-is-to-clean-a-system-to-a-near-factory-state-and-delete-file-system-and-cloud-resources" },
+    { "title": "TechRadar: Amazon AI coding agent hacked to inject data-wiping commands", "url": "https://www.techradar.com/pro/amazon-ai-coding-agent-hacked-to-inject-data-wiping-commands" }
+  ],
+  "scenarios": [
+    {
+      "id": "home-wipe",
+      "command": "rm -rf ~/*",
+      "kind": "representative",
+      "note": "The prompt asked for home directories to be wiped while skipping hidden files."
+    },
+    {
+      "id": "ec2-terminate",
+      "command": "aws ec2 terminate-instances --instance-ids i-0123456789abcdef0",
+      "kind": "representative",
+      "note": "A cloud delete of the kind the prompt asked for."
+    },
+    {
+      "id": "s3-recursive-delete",
+      "command": "aws s3 rm s3://company-assets --recursive",
+      "kind": "representative",
+      "note": "Emptying a storage bucket."
+    },
+    {
+      "id": "iam-delete-user",
+      "command": "aws iam delete-user --user-name deploy",
+      "kind": "representative",
+      "note": "Deleting an account identity."
+    }
+  ]
+}
