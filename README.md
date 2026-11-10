@@ -69,7 +69,7 @@ One more thing it catches: a hook that refuses a command once and lets the retry
 | Feb 2026 | Claude Code | terraform destroy takes out production and its backups |
 | Apr 2026 | Cursor | One API call deletes a company database and its backups |
 
-Every incident links to its public sources. Build the full page with all the stories:
+Every incident links to its public sources. Read all the stories in the [incident museum](https://salman-moussa.github.io/crashtest/), or build that page yourself:
 
 ```bash
 node bin/crashtest.js museum
