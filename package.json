@@ -1,7 +1,7 @@
 {
   "name": "agent-crashtest",
-  "version": "0.1.0",
-  "description": "Replay real AI coding agent disasters against your own Claude Code setup. Nothing is executed.",
+  "version": "0.2.0",
+  "description": "Replay real AI coding agent disasters against your own Claude Code, Codex and Cursor setup. Nothing is executed.",
   "type": "module",
   "bin": {
     "crashtest": "bin/crashtest.js",
