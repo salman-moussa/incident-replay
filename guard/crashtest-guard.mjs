@@ -105,6 +105,7 @@ const ASK = [
   { id: 'cluster-delete', re: /\bkubectl\b.*\bdelete\b|\bhelm\b.*\b(?:uninstall|delete)\b/i, why: 'it deletes cluster resources' },
   { id: 'sql-destroy', re: /\b(?:drop\s+(?:database|table|schema)|truncate\s+table)\b|\bdelete\s+from\s+[\w."]+\s*;?\s*$/i, why: 'it drops or empties database tables' },
   { id: 'database-reset', re: /\bprisma\b.*(?:\bmigrate\s+reset\b|\bdb\s+push\b.*--(?:force-reset|accept-data-loss))|\bdrizzle-kit\b.*\bpush\b|(?:^|\s)(?:db:push|db:reset|db:drop|db:wipe|migrate:fresh|migrate:reset)\b|\bsupabase\b.*\bdb\s+reset\b|\b(?:dropdb|flushall|flushdb|dropDatabase)\b/i, why: 'it can reset or overwrite a database' },
+  { id: 'shadow-database', re: /shadow[-_]database[-_]url/i, why: 'it names a shadow database, which the tool wipes before use' },
   { id: 'git-discard', re: /\bgit\b.*\breset\b.*--hard\b|\bgit\b.*\b(?:checkout|restore)\b.*\s(?:--\s+)?\.(?:\s|$)|\bgit\b.*\bclean\b.*\s-[a-z]*f|\bgit\b.*\bstash\b.*\b(?:drop|clear)\b/i, why: 'it throws away uncommitted work' },
   { id: 'git-force-push', re: /\bgit\b.*\bpush\b.*(?:\s--force(?!-with-lease)\b|\s-[a-z]*f\b|\s\+\S)/i, why: 'it overwrites history on the remote' },
   { id: 'platform-delete', re: /\bvolumeDelete\b|\bmutation\b.*delete|\bcurl\b.*(?:-X\s*|--request\s+)DELETE\b|\brailway\b.*\b(?:delete|down)\b|\bheroku\b.*\bapps:destroy\b|\bgh\b.*\brepo\s+delete\b|\bvercel\b.*\b(?:remove|rm)\b/i, why: 'it deletes hosted data or services through an API' },

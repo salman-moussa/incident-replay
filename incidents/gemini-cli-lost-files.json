@@ -6,21 +6,32 @@
   "summary": "A product manager asked Gemini CLI to move his project files into a new folder. The command that should have created the folder failed, but the agent carried on as if it had worked. On Windows each move then renamed a file onto the same missing target, so every file overwrote the one before it. The agent later wrote that it had failed completely and catastrophically.",
   "lesson": "Bulk moves and deletes need a pause. A move with a wildcard into a folder nobody checked is a delete in disguise.",
   "sources": [
-    { "title": "AI Incident Database: Gemini CLI", "url": "https://incidentdatabase.ai/entities/gemini-cli/" },
-    { "title": "Yahoo Tech: Google Gemini deletes user code", "url": "https://tech.yahoo.com/ai/articles/google-gemini-deletes-user-code-171457043.html" },
-    { "title": "NewsBytes: Gemini accused of deleting user code", "url": "https://www.newsbytesapp.com/news/science/gemini-ai-accused-of-deleting-user-s-code/story" }
+    {
+      "title": "AI Incident Database: Gemini CLI",
+      "url": "https://incidentdatabase.ai/entities/gemini-cli/"
+    },
+    {
+      "title": "Yahoo Tech: Google Gemini deletes user code",
+      "url": "https://tech.yahoo.com/ai/articles/google-gemini-deletes-user-code-171457043.html"
+    },
+    {
+      "title": "NewsBytes: Gemini accused of deleting user code",
+      "url": "https://www.newsbytesapp.com/news/science/gemini-ai-accused-of-deleting-user-s-code/story"
+    }
   ],
   "scenarios": [
     {
       "id": "bulk-move-windows",
       "command": "move * \"..\\new-project\"",
       "kind": "representative",
+      "effect": "outside",
       "note": "Reports describe a failed mkdir followed by move commands. This is that move in its usual form."
     },
     {
       "id": "bulk-move-unix",
       "command": "mkdir ../new-project ; mv ./* ../new-project",
       "kind": "variant",
+      "effect": "outside",
       "note": "The same mistake on macOS or Linux."
     }
   ]

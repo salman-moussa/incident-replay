@@ -6,15 +6,25 @@
   "summary": "The Financial Times reported that engineers at AWS asked the Kiro agent to fix a small bug and it chose to delete and recreate the environment, leading to a 13-hour disruption of a cost management feature in one region. Amazon disputes the framing: it says the cause was user error and access controls that were wider than intended, not the agent.",
   "lesson": "Both sides agree on one thing: the agent had permission to delete. Narrow what an agent may delete before you need to.",
   "sources": [
-    { "title": "PC Gamer: AWS outage and an AI coding tool, Amazon blames access controls", "url": "https://www.pcgamer.com/software/ai/reports-claim-an-aws-outage-last-year-was-caused-by-an-ai-coding-tool-deciding-to-delete-and-recreate-the-environment-from-scratch-while-amazon-says-misconfigured-access-controls-were-to-blame" },
-    { "title": "The Decoder: AWS AI coding tool decided to delete and recreate a customer-facing system", "url": "https://the-decoder.com/aws-ai-coding-tool-decided-to-delete-and-recreate-a-customer-facing-system-causing-13-hour-outage-report-says/" },
-    { "title": "TechRadar: Recent AWS outages blamed on AI tools", "url": "https://www.techradar.com/pro/recent-aws-outages-blamed-on-ai-tools-at-least-two-incidents-took-down-amazon-services" }
+    {
+      "title": "PC Gamer: AWS outage and an AI coding tool, Amazon blames access controls",
+      "url": "https://www.pcgamer.com/software/ai/reports-claim-an-aws-outage-last-year-was-caused-by-an-ai-coding-tool-deciding-to-delete-and-recreate-the-environment-from-scratch-while-amazon-says-misconfigured-access-controls-were-to-blame"
+    },
+    {
+      "title": "The Decoder: AWS AI coding tool decided to delete and recreate a customer-facing system",
+      "url": "https://the-decoder.com/aws-ai-coding-tool-decided-to-delete-and-recreate-a-customer-facing-system-causing-13-hour-outage-report-says/"
+    },
+    {
+      "title": "TechRadar: Recent AWS outages blamed on AI tools",
+      "url": "https://www.techradar.com/pro/recent-aws-outages-blamed-on-ai-tools-at-least-two-incidents-took-down-amazon-services"
+    }
   ],
   "scenarios": [
     {
       "id": "delete-stack",
       "command": "aws cloudformation delete-stack --stack-name cost-explorer-prod",
       "kind": "representative",
+      "effect": "network",
       "note": "The commands were not published. Deleting the stack is the usual way to delete and recreate an environment."
     }
   ]

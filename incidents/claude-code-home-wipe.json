@@ -6,39 +6,53 @@
   "summary": "A developer asked Claude Code to clean up an old repository. The delete command listed three project folders and then the home folder as a fourth argument. The shell did exactly what it was told and the Mac lost its user data. The post drew wide attention. Claude Code today has a built-in check that asks before removing a home or root folder.",
   "lesson": "One extra argument was enough. The check has to read every argument of every delete, in every form the command can take.",
   "sources": [
-    { "title": "Docker: Coding agent horror stories, the rm -rf incident", "url": "https://www.docker.com/blog/coding-agent-horror-stories-the-rm-rf-incident/" },
-    { "title": "PCWorld: The one command you should never let Claude Code or Codex run", "url": "https://www.pcworld.com/article/3208043/the-one-command-you-should-never-let-claude-code-or-codex-run.html" },
-    { "title": "GIGAZINE: Claude Code CLI deletes a Mac home directory", "url": "https://gigazine.net/gsc_news/en/20251216-claude-code-cli-mac-deleted" }
+    {
+      "title": "Docker: Coding agent horror stories, the rm -rf incident",
+      "url": "https://www.docker.com/blog/coding-agent-horror-stories-the-rm-rf-incident/"
+    },
+    {
+      "title": "PCWorld: The one command you should never let Claude Code or Codex run",
+      "url": "https://www.pcworld.com/article/3208043/the-one-command-you-should-never-let-claude-code-or-codex-run.html"
+    },
+    {
+      "title": "GIGAZINE: Claude Code CLI deletes a Mac home directory",
+      "url": "https://gigazine.net/gsc_news/en/20251216-claude-code-cli-mac-deleted"
+    }
   ],
   "scenarios": [
     {
       "id": "reported",
       "command": "rm -rf tests/ patches/ plan/ ~/",
       "kind": "reported",
+      "effect": "outside",
       "note": "The command as reported."
     },
     {
       "id": "full-path-rm",
       "command": "/bin/rm -rf ~/",
       "kind": "variant",
+      "effect": "outside",
       "note": "Calling rm by its full path gets past a rule written for rm."
     },
     {
       "id": "bash-c",
       "command": "bash -c 'rm -rf ~/'",
       "kind": "variant",
+      "effect": "outside",
       "note": "The same delete wrapped in a second shell."
     },
     {
       "id": "home-variable",
       "command": "rm -rf \"$HOME\"/*",
       "kind": "variant",
+      "effect": "outside",
       "note": "The home folder named by its variable."
     },
     {
       "id": "find-delete",
       "command": "find ~ -mindepth 1 -delete",
       "kind": "variant",
+      "effect": "outside",
       "note": "No rm at all, same result."
     }
   ]

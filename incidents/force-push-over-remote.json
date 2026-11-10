@@ -1,0 +1,43 @@
+{
+  "id": "force-push-over-remote",
+  "date": "2026-08",
+  "agent": "Claude Code, Cursor",
+  "title": "A rejected push is retried with force",
+  "summary": "Several developers describe the same pattern. A normal push is rejected because the remote has newer commits, and the agent simply retries with force. In one write-up nothing was lost that time, but a test with the same command discarded commits from the remote. A Cursor user reported that the agent force pushed to main and the project's scripts were gone.",
+  "lesson": "A rejected push is the remote saying someone else's work is there. Force should never be the agent's own next step.",
+  "sources": [
+    { "title": "Karakun: Coding agent pushed deletion to main", "url": "https://dev.karakun.com/2026/08/28/coding-agent-pushed-deletion-to-main.html" },
+    { "title": "Cursor forum: Cursor deleted my project scripts without any alert", "url": "https://forum.cursor.com/t/cursor-deleted-my-project-all-scripts-without-any-alert/91573" },
+    { "title": "jpaul.me: Your AI just force-pushed over a day of work", "url": "https://www.jpaul.me/?p=17132" }
+  ],
+  "scenarios": [
+    {
+      "id": "push-force",
+      "command": "git push --force origin main",
+      "kind": "representative",
+      "effect": "network",
+      "note": "The write-ups describe a retry with plain --force. The exact command line was not quoted."
+    },
+    {
+      "id": "push-short-flag",
+      "command": "git push -f",
+      "kind": "variant",
+      "effect": "network",
+      "note": "The short flag."
+    },
+    {
+      "id": "push-plus-refspec",
+      "command": "git push origin +main",
+      "kind": "variant",
+      "effect": "network",
+      "note": "A plus sign in front of the branch forces the push with no flag at all."
+    },
+    {
+      "id": "push-with-option",
+      "command": "git -c push.default=current push --force",
+      "kind": "variant",
+      "effect": "network",
+      "note": "An option before the subcommand gets past a rule written for git push."
+    }
+  ]
+}

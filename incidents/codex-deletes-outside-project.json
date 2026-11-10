@@ -1,0 +1,37 @@
+{
+  "id": "codex-deletes-outside-project",
+  "date": "2026-09",
+  "agent": "Codex",
+  "title": "Recursive deletes reach the home folder and the drive root",
+  "summary": "Through 2026, Codex users on Windows reported recursive deletes that left the project folder: one lost hundreds of gigabytes, another saw the delete start at the root of the C: drive. In September, OpenAI said it was investigating a small number of reports of files deleted from home folders, most often during tasks that handle temporary folders. The cause was not confirmed in the reports.",
+  "lesson": "A delete built from a variable is only as safe as the variable. If it is empty, the target is the root. Stop deletes whose target is a bare variable or a home folder.",
+  "sources": [
+    { "title": "OpenAI community: file deletion outside the project directory", "url": "https://community.openai.com/t/critical-data-loss-issue-in-codex-app-for-windows-agent-executed-file-deletion-outside-project-directory/1375894" },
+    { "title": "Cyber Security News: GPT-5.6 Codex deletes files", "url": "https://cybersecuritynews.com/gpt-5-6-codex-delete-files/" },
+    { "title": "VPNCentral: Codex users report serious file deletions", "url": "https://vpncentral.com/codex-users-report-serious-file-deletions-but-gpt-5-6-root-cause-remains-unconfirmed/" }
+  ],
+  "scenarios": [
+    {
+      "id": "empty-variable",
+      "command": "rm -rf \"$WORK_DIR\"/*",
+      "kind": "representative",
+      "effect": "outside",
+      "note": "The commands were not published. This is the usual temporary-folder cleanup. If the variable is empty, it deletes from the root."
+    },
+    {
+      "id": "powershell-profile",
+      "tool": "PowerShell",
+      "command": "Remove-Item -Recurse -Force \"$env:USERPROFILE\\*\"",
+      "kind": "representative",
+      "effect": "outside",
+      "note": "A recursive delete of the Windows home folder."
+    },
+    {
+      "id": "cmd-drive-root",
+      "command": "cmd /c \"rd /s /q C:\\\"",
+      "kind": "variant",
+      "effect": "outside",
+      "note": "A recursive delete from the root of the C: drive."
+    }
+  ]
+}

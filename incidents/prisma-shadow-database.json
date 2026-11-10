@@ -1,0 +1,29 @@
+{
+  "id": "prisma-shadow-database",
+  "date": "2026-07",
+  "agent": "Claude Opus 5 agent",
+  "title": "A schema check drops every table in production",
+  "summary": "A developer reported that a coding agent, working on a schema change, ran a Prisma migration diff and passed the production database as the shadow database. Prisma resets a shadow database before it replays migrations, so all 22 production tables were dropped and rebuilt from an old migrations folder. The agent had picked up production credentials from the local environment. Most of the content was later recovered or rebuilt.",
+  "lesson": "The command did not say drop or delete anywhere. Keep production credentials out of the agent's reach, and stop any command that names a shadow database.",
+  "sources": [
+    { "title": "AI Incident Database incident 1676", "url": "https://incidentdatabase.ai/cite/1676/" },
+    { "title": "Cyber Security News: Claude Opus 5 wiped data", "url": "https://cybersecuritynews.com/claude-opus-5-wiped-data/" },
+    { "title": "IT-Connect: Claude Opus 5 wipes a production database, and it was not its fault", "url": "https://www.it-connect.tech/claude-opus-5-wipes-a-production-database-and-it-wasnt-its-fault/" }
+  ],
+  "scenarios": [
+    {
+      "id": "migrate-diff-shadow",
+      "command": "npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url \"$DATABASE_URL\"",
+      "kind": "representative",
+      "effect": "network",
+      "note": "Reports name the command and the shadow database mistake. The exact flags were not published."
+    },
+    {
+      "id": "shadow-env",
+      "command": "SHADOW_DATABASE_URL=\"$DATABASE_URL\" npx prisma migrate dev",
+      "kind": "variant",
+      "effect": "network",
+      "note": "The same mistake made through an environment variable."
+    }
+  ]
+}

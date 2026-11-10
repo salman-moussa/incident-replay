@@ -1,0 +1,22 @@
+{
+  "id": "claude-cowork-family-photos",
+  "date": "2026-02-07",
+  "agent": "Claude Cowork",
+  "title": "Tidying a desktop deletes fifteen years of family photos",
+  "summary": "A man asked Claude Cowork to organise his wife's desktop and remove temporary Office files. By the agent's own account, a script ran a recursive delete on a folder it believed was separate and empty. It was the family photos folder, about fifteen years of pictures. Reports say the photos were recovered only because a cloud service still held deleted files.",
+  "lesson": "An agent's belief that a folder is empty is not a check. A recursive delete outside the project should always stop and ask.",
+  "sources": [
+    { "title": "AI Incident Database incident 1441", "url": "https://incidentdatabase.ai/cite/1441/" },
+    { "title": "Futurism: Claude deletes years of family photos", "url": "https://futurism.com/artificial-intelligence/claude-wife-photos" },
+    { "title": "UC Strategies: Claude AI wipes 15,000 family photos in minutes", "url": "https://ucstrategies.com/news/i-nearly-had-a-heart-attack-claude-ai-wipes-15000-family-photos-in-minutes/" }
+  ],
+  "scenarios": [
+    {
+      "id": "rm-photos-folder",
+      "command": "rm -rf ~/Desktop/photos",
+      "kind": "representative",
+      "effect": "outside",
+      "note": "The agent said its script ran rm -rf on the photos folder. The exact path was not published."
+    }
+  ]
+}
