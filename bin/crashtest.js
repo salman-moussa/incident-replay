@@ -3,7 +3,8 @@ import { spawn } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { configDir, crashTest, loadConfig, loadIncidents } from '../src/claude.js';
+import { configDir, loadIncidents } from '../src/claude.js';
+import { crashTest } from '../src/run.js';
 import { htmlMuseum, htmlReport, terminalSummary } from '../src/report.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -13,15 +14,16 @@ const command = args[0] && !args[0].startsWith('-') ? args.shift() : 'run';
 const flag = (name) => args.includes(name);
 const value = (name, fallback) => (args.includes(name) && args[args.indexOf(name) + 1]) || fallback;
 
-const HELP = `crashtest: replay real AI agent incidents against your Claude Code setup. Nothing is executed.
+const HELP = `crashtest: replay real AI agent incidents against your Claude Code, Codex and Cursor setup. Nothing is executed.
 
   crashtest                 test your setup and write crashtest-report.html
       --cwd <dir>           project folder to test (default: current folder)
+      --agents <list>       claude,codex,cursor (default: every one found on this machine)
       --out <file>          where to write the report
       --open                open the report in your browser
       --json                print the result as JSON instead
-      --no-hooks            do not replay your PreToolUse hooks
-  crashtest fix             install the guard hook (backs up settings.json first)
+      --no-hooks            do not replay your hooks
+  crashtest fix             install the guard hook for Claude Code (backs up settings.json first)
   crashtest unfix           remove the guard hook
   crashtest museum          write the incident museum page (--out site/index.html)
   crashtest list            list the incidents
@@ -38,12 +40,12 @@ function open(file) {
 
 async function run() {
   const cwd = resolve(value('--cwd', process.cwd()));
-  const config = loadConfig({ cwd });
   const incidents = loadIncidents();
+  const agents = value('--agents', '').split(',').map((a) => a.trim()).filter(Boolean);
   const json = flag('--json');
   const progress = process.stderr.isTTY && !json
     ? (done, total) => process.stderr.write(`\r  replaying ${done}/${total}`) : () => {};
-  const report = await crashTest({ config, incidents, useHooks: !flag('--no-hooks'), onProgress: progress });
+  const report = await crashTest({ cwd, incidents, agents, useHooks: !flag('--no-hooks'), onProgress: progress });
   if (process.stderr.isTTY && !json) process.stderr.write('\r\x1b[K');
   if (json) return console.log(JSON.stringify(report, null, 2));
   console.log(terminalSummary(report, paint));
@@ -132,7 +134,12 @@ if (flag('--help') || flag('-h') || command === 'help') {
 } else if (flag('--version')) {
   console.log(JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version);
 } else if (commands[command]) {
-  await commands[command]();
+  try {
+    await commands[command]();
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
 } else {
   console.error(`Unknown command: ${command}\n\n${HELP}`);
   process.exit(1);

@@ -11,7 +11,6 @@ import { evaluate, ruleMatchesCommand } from './engine.js';
 import { decide } from '../guard/crashtest-guard.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const MODE_ORDER = ['user', 'project', 'local', 'managed'];
 const RANK = { deny: 3, ask: 2, allow: 1 };
 
 function readJson(path, warnings) {
@@ -94,7 +93,6 @@ export function loadConfig({ cwd = process.cwd(), env = process.env } = {}) {
   }
   config.hooks.push(...pluginHooks(dir, enabled, warnings));
   if (config.hooksDisabled) config.hooks = [];
-  void MODE_ORDER;
   return config;
 }
 
@@ -133,7 +131,8 @@ function readAnswer(code, stdout, stderr) {
   return null;
 }
 
-function runHandler(h, payload, { cwd, env, timeoutMs }) {
+/** Run one hook command with `payload` on stdin. Resolves with its exit code and output, or an error. */
+export function runHandler(h, payload, { cwd, env, timeoutMs }) {
   return new Promise((done) => {
     let child;
     try {
@@ -147,7 +146,7 @@ function runHandler(h, payload, { cwd, env, timeoutMs }) {
     child.stdout.on('data', (d) => { stdout += d; });
     child.stderr.on('data', (d) => { stderr += d; });
     child.on('error', (error) => { clearTimeout(timer); done({ error: `${h.source}: ${error.message}` }); });
-    child.on('close', (code) => { clearTimeout(timer); done({ answer: readAnswer(code, stdout, stderr), source: h.source }); });
+    child.on('close', (code) => { clearTimeout(timer); done({ code, stdout, stderr, source: h.source }); });
     child.stdin.on('error', () => {});
     child.stdin.end(JSON.stringify(payload));
   });
@@ -172,9 +171,10 @@ export async function askHooks(config, { tool, command, mode, sessionId = 'crash
   for (const r of await Promise.all(jobs)) {
     result.ran++;
     if (r.error) { result.errors.push(r.error); continue; }
-    if (r.answer && (RANK[r.answer.decision] || 0) > (RANK[result.decision] || 0)) {
-      result.decision = r.answer.decision;
-      result.reason = `${r.source}${r.answer.reason ? `: ${r.answer.reason}` : ''}`;
+    const answer = readAnswer(r.code, r.stdout, r.stderr);
+    if (answer && (RANK[answer.decision] || 0) > (RANK[result.decision] || 0)) {
+      result.decision = answer.decision;
+      result.reason = `${r.source}${answer.reason ? `: ${answer.reason}` : ''}`;
     }
   }
   return result;
@@ -193,7 +193,7 @@ const stronger = (a, b) => ((RANK[b?.decision] || 0) > (RANK[a?.decision] || 0) 
  * Replay every scenario. Each one gets three verdicts: the configured mode, bypass mode
  * ("YOLO"), and bypass mode with the crashtest guard added. Nothing is executed.
  */
-export async function crashTest({ config, incidents, useHooks = true, env = process.env, onProgress = () => {} }) {
+export async function replayClaude({ config, incidents, useHooks = true, env = process.env, onProgress = () => {} }) {
   const report = {
     generatedAt: new Date().toISOString(), mode: config.mode, bypassDisabled: config.bypassDisabled,
     files: config.files, warnings: [...config.warnings], hookCount: config.hooks.length, hooksUsed: useHooks,
@@ -250,4 +250,26 @@ export async function crashTest({ config, incidents, useHooks = true, env = proc
     report.incidents.push({ ...incident, scenarios });
   }
   return report;
+}
+
+/** Verdicts for every scenario under the Claude Code setup found on this machine. */
+export async function claudeAgent({ cwd, env = process.env, incidents, useHooks = true, onProgress = () => {} }) {
+  const r = await replayClaude({ config: loadConfig({ cwd, env }), incidents, useHooks, env, onProgress });
+  const verdicts = new Map();
+  r.incidents.forEach((incident, i) => incident.scenarios.forEach((s, j) => {
+    verdicts.set(incidents[i].scenarios[j], { normal: s.normal, yolo: s.yolo, guarded: s.guarded });
+  }));
+  const tidy = (path) => path.replace(homedir(), '~');
+  const notes = [
+    r.files.length ? `Settings read: ${r.files.map((f) => `${f.scope} (${tidy(f.path)})`).join(', ')}.` : 'No settings found, so Claude Code defaults apply.',
+    r.hooksUsed ? `${r.hookCount} PreToolUse hook(s) found.` : 'Hooks were not replayed (--no-hooks).',
+    r.skippedHooks ? `${r.skippedHooks} hook(s) are not shell commands and were not replayed.` : '',
+    r.retryOnly ? `${r.retryOnly} command(s) were refused once by a hook and allowed on the retry. An agent retries, so they are scored by the second answer.` : '',
+    ...r.hookErrors.map((e) => `Hook problem: ${e}.`),
+    ...r.warnings,
+  ].filter(Boolean);
+  return {
+    id: 'claude', name: 'Claude Code', mode: r.mode, yoloName: '--dangerously-skip-permissions',
+    yoloDisabled: r.bypassDisabled, hasGuard: true, notes, verdicts,
+  };
 }
