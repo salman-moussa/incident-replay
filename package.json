@@ -1,11 +1,10 @@
 {
-  "name": "agent-crashtest",
+  "name": "incident-replay",
   "version": "0.2.0",
   "description": "Replay real AI coding agent disasters against your own Claude Code, Codex and Cursor setup. Nothing is executed.",
   "type": "module",
   "bin": {
-    "crashtest": "bin/crashtest.js",
-    "agent-crashtest": "bin/crashtest.js"
+    "incident-replay": "bin/incident-replay.js"
   },
   "files": [
     "bin",
@@ -15,7 +14,7 @@
   ],
   "scripts": {
     "test": "node --test",
-    "museum": "node bin/crashtest.js museum"
+    "museum": "node bin/incident-replay.js museum"
   },
   "engines": {
     "node": ">=20"
@@ -30,5 +29,13 @@
     "guardrails"
   ],
   "author": "Salman Moussa",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salman-moussa/incident-replay.git"
+  },
+  "homepage": "https://salman-moussa.github.io/incident-replay/",
+  "bugs": {
+    "url": "https://github.com/salman-moussa/incident-replay/issues"
+  }
 }

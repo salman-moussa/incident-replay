@@ -4,29 +4,29 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSyn
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { configDir, loadIncidents } from '../src/claude.js';
-import { crashTest } from '../src/run.js';
+import { replayAll } from '../src/run.js';
 import { htmlMuseum, htmlReport, terminalSummary } from '../src/report.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const GUARD = 'crashtest-guard.mjs';
+const GUARD = 'incident-replay-guard.mjs';
 const args = process.argv.slice(2);
 const command = args[0] && !args[0].startsWith('-') ? args.shift() : 'run';
 const flag = (name) => args.includes(name);
 const value = (name, fallback) => (args.includes(name) && args[args.indexOf(name) + 1]) || fallback;
 
-const HELP = `crashtest: replay real AI agent incidents against your Claude Code, Codex and Cursor setup. Nothing is executed.
+const HELP = `incident-replay: replay real AI agent incidents against your Claude Code, Codex and Cursor setup. Nothing is executed.
 
-  crashtest                 test your setup and write crashtest-report.html
+  incident-replay                 test your setup and write incident-replay-report.html
       --cwd <dir>           project folder to test (default: current folder)
       --agents <list>       claude,codex,cursor (default: every one found on this machine)
       --out <file>          where to write the report
       --open                open the report in your browser
       --json                print the result as JSON instead
       --no-hooks            do not replay your hooks
-  crashtest fix             install the guard hook for Claude Code (backs up settings.json first)
-  crashtest unfix           remove the guard hook
-  crashtest museum          write the incident museum page (--out site/index.html)
-  crashtest list            list the incidents
+  incident-replay fix             install the guard hook for Claude Code (backs up settings.json first)
+  incident-replay unfix           remove the guard hook
+  incident-replay museum          write the incident museum page (--out site/index.html)
+  incident-replay list            list the incidents
 `;
 
 const COLOUR = { ok: 32, bad: 31 };
@@ -45,11 +45,11 @@ async function run() {
   const json = flag('--json');
   const progress = process.stderr.isTTY && !json
     ? (done, total) => process.stderr.write(`\r  replaying ${done}/${total}`) : () => {};
-  const report = await crashTest({ cwd, incidents, agents, useHooks: !flag('--no-hooks'), onProgress: progress });
+  const report = await replayAll({ cwd, incidents, agents, useHooks: !flag('--no-hooks'), onProgress: progress });
   if (process.stderr.isTTY && !json) process.stderr.write('\r\x1b[K');
   if (json) return console.log(JSON.stringify(report, null, 2));
   console.log(terminalSummary(report, paint));
-  const out = resolve(value('--out', 'crashtest-report.html'));
+  const out = resolve(value('--out', 'incident-replay-report.html'));
   mkdirSync(dirname(out), { recursive: true });
   writeFileSync(out, htmlReport(report));
   console.log(`\nReport: ${out}`);
@@ -70,7 +70,7 @@ const usesGuard = (group) => (group.hooks || []).some((h) => String(h.command).i
 
 function writeSettings(path, settings) {
   if (existsSync(path)) {
-    const backup = `${path}.crashtest-backup-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    const backup = `${path}.incident-replay-backup-${new Date().toISOString().replace(/[:.]/g, '-')}`;
     copyFileSync(path, backup);
     console.log(`Backup:  ${backup}`);
   }
@@ -95,7 +95,7 @@ function fix() {
     }],
   };
   writeSettings(settingsPath, settings);
-  console.log(`Updated: ${settingsPath}\nRestart Claude Code, then run crashtest again. Undo with: crashtest unfix`);
+  console.log(`Updated: ${settingsPath}\nRestart Claude Code, then run incident-replay again. Undo with: incident-replay unfix`);
 }
 
 function unfix() {

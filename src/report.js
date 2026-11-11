@@ -1,4 +1,4 @@
-// Turns a crash test result into terminal text and a self-contained HTML page.
+// Turns a replay result into terminal text and a self-contained HTML page.
 // The same page, without verdicts, is the incident museum.
 
 const LABEL = { blocked: 'Blocked', asks: 'Asks you', runs: 'Runs', unknown: 'Unknown' };
@@ -21,15 +21,15 @@ export function terminalSummary(report, paint = (text) => text) {
   const line = (name, b) => `  ${name.padEnd(42)} ${String(stopped(b)).padStart(3)}/${report.scenarios} stopped   `
     + `${n(b, 'blocked')} blocked, ${n(b, 'asks')} ask first, ${paint(`${n(b, 'runs')} run unasked`, n(b, 'runs') ? 'bad' : 'ok')}`
     + (n(b, 'unknown') ? `, ${n(b, 'unknown')} unknown` : '');
-  const out = ['', `crashtest: ${report.incidents.length} real incidents, ${report.scenarios} scenarios. Nothing was executed.`];
+  const out = ['', `incident-replay: ${report.incidents.length} real incidents, ${report.scenarios} scenarios. Nothing was executed.`];
   for (const agent of report.agents) {
     out.push('', agent.name, line(`Your mode (${agent.mode})`, agent.totals.normal));
     out.push(agent.yoloDisabled ? '  YOLO mode                                  disabled in your settings' : line(`YOLO mode (${agent.yoloName})`, agent.totals.yolo));
-    if (agent.hasGuard) out.push(line('YOLO mode + crashtest guard', agent.totals.guarded));
+    if (agent.hasGuard) out.push(line('YOLO mode + incident-replay guard', agent.totals.guarded));
     for (const note of agent.notes) out.push(`  note: ${note}`);
   }
   const gap = report.agents.find((a) => a.hasGuard && n(a.totals.guarded, 'runs') < n(a.totals.yolo, 'runs'));
-  if (gap) out.push('', `Close the ${gap.name} gap:  crashtest fix`);
+  if (gap) out.push('', `Close the ${gap.name} gap:  incident-replay fix`);
   return out.join('\n');
 }
 
@@ -133,14 +133,14 @@ function agentBlock(agent, report) {
 <summary>${unasked.length} of ${report.scenarios} would run with no question in YOLO mode</summary>
 <p>YOLO mode is <code>${esc(agent.yoloName)}</code>. With it, only hard rules and hooks stand between the agent and these commands.</p>
 <ul>${unasked.map(({ s, i }) => `<li><code>${esc(s.command)}</code> · <a href="#${esc(i.id)}">${esc(i.title)}</a></li>`).join('')}</ul>
-${agent.hasGuard && n(agent.totals.guarded, 'runs') < n(agent.totals.yolo, 'runs') ? '<code class="fix">crashtest fix</code>' : ''}
+${agent.hasGuard && n(agent.totals.guarded, 'runs') < n(agent.totals.yolo, 'runs') ? '<code class="fix">incident-replay fix</code>' : ''}
 </details>` : '';
   return `<section class="agent">
 <h2>${esc(agent.name)}</h2>
 <div class="tiles">
 ${tile('Your mode', agent.mode, agent.totals.normal, report.scenarios)}
 ${yolo}
-${agent.hasGuard ? tile('YOLO mode', 'with the crashtest guard', agent.totals.guarded, report.scenarios) : ''}
+${agent.hasGuard ? tile('YOLO mode', 'with the incident-replay guard', agent.totals.guarded, report.scenarios) : ''}
 </div>
 <p class="note">${agent.notes.map(esc).join(' ')}</p>
 ${gap}
@@ -176,14 +176,14 @@ export function htmlReport(report) {
 <h2 class="section">The incidents</h2>
 ${report.incidents.map((i) => incidentCard(i, report.agents)).join('\n')}
 <footer>
-<p>crashtest replays each command as a simulated tool call against permission rules and hooks. No command is executed, and nothing leaves your machine.</p>
+<p>incident-replay replays each command as a simulated tool call against permission rules and hooks. No command is executed, and nothing leaves your machine.</p>
 ${KINDS_NOTE}
-<p>Each row shows three answers per agent: "yours" is your setup as it is, "YOLO" is the skip-everything mode, and "guard" is YOLO mode with the crashtest guard added.</p>
+<p>Each row shows three answers per agent: "yours" is your setup as it is, "YOLO" is the skip-everything mode, and "guard" is YOLO mode with the incident-replay guard added.</p>
 <p>Verdicts follow each tool's published permission rules. They are a model of that behaviour, not the tool itself.</p>
 </footer>`;
   return page({
-    title: 'Crash test report',
-    mark: `crashtest · ${day(report.generatedAt.slice(0, 10))}`,
+    title: 'Incident replay report',
+    mark: `incident-replay · ${day(report.generatedAt.slice(0, 10))}`,
     heading: 'Would your AI coding setup survive these real incidents?',
     lead: `${report.scenarios} commands from ${report.incidents.length} public incidents were replayed against your ${esc(names(report.agents))} setup. Nothing was executed.`,
     body,
@@ -195,12 +195,12 @@ export function htmlMuseum(incidents) {
   const body = `<h2 class="section">${incidents.length} incidents, newest first</h2>
 ${newestFirst.map((i) => incidentCard(i, [])).join('\n')}
 <footer>
-<p>Every entry links to public sources. Test your own setup against all of them with <a href="https://github.com/salman-moussa/crashtest">crashtest</a>.</p>
+<p>Every entry links to public sources. Test your own setup against all of them with <a href="https://github.com/salman-moussa/incident-replay">incident-replay</a>.</p>
 ${KINDS_NOTE}
 </footer>`;
   return page({
     title: 'AI agent incidents',
-    mark: 'crashtest · incident museum',
+    mark: 'incident-replay · incident museum',
     heading: 'Real incidents where an AI coding agent destroyed real work',
     lead: 'What happened, the command behind it, and the lesson. Each one is a test case you can replay against your own setup, safely.',
     body,

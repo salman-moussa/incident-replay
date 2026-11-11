@@ -1,34 +1,34 @@
-# crashtest
+# incident-replay
 
 **Would your AI coding setup survive the incidents that already happened to other people?**
 
-AI coding agents have deleted home folders, wiped drives, dropped production databases and destroyed cloud setups. Each of those stories is public. crashtest turns them into test cases and replays them against your own Claude Code, Codex and Cursor setup.
+AI coding agents have deleted home folders, wiped drives, dropped production databases and destroyed cloud setups. Each of those stories is public. incident-replay turns them into test cases and replays them against your own Claude Code, Codex and Cursor setup.
 
-Nothing is executed. Each command is sent to your rules and hooks as a simulated tool call, and crashtest records the answer.
+Nothing is executed. Each command is sent to your rules and hooks as a simulated tool call, and incident-replay records the answer.
 
-![The crash test report](docs/report-1440.png)
+![The incident replay report](docs/report-1440.png)
 
 ## Run it
 
 ```bash
-git clone https://github.com/salman-moussa/crashtest
+git clone https://github.com/salman-moussa/incident-replay
 ```
 
 ```bash
-node crashtest/bin/crashtest.js --open
+node incident-replay/bin/incident-replay.js --open
 ```
 
 It needs Node 20 or newer and has no dependencies. Nothing leaves your machine.
 
-It tests every agent it finds on your machine. You get a summary in the terminal and a report page, `crashtest-report.html`:
+It tests every agent it finds on your machine. You get a summary in the terminal and a report page, `incident-replay-report.html`:
 
 ```
-crashtest: 14 real incidents, 44 scenarios. Nothing was executed.
+incident-replay: 14 real incidents, 44 scenarios. Nothing was executed.
 
 Claude Code
   Your mode (default)                         44/44 stopped   0 blocked, 44 ask first, 0 run unasked
   YOLO mode (--dangerously-skip-permissions)  10/44 stopped   0 blocked, 10 ask first, 34 run unasked
-  YOLO mode + crashtest guard                 44/44 stopped   44 blocked, 0 ask first, 0 run unasked
+  YOLO mode + incident-replay guard                 44/44 stopped   44 blocked, 0 ask first, 0 run unasked
 
 Codex
   Your mode (read-only, on-request)           44/44 stopped   0 blocked, 44 ask first, 0 run unasked
@@ -49,7 +49,7 @@ Every scenario gets a verdict for your setup as it is, and one for YOLO mode, th
 - **Asks you**: you get a prompt first. This only protects you if you read it.
 - **Runs**: it runs with no question.
 
-| Agent | What crashtest reads | YOLO mode |
+| Agent | What incident-replay reads | YOLO mode |
 |---|---|---|
 | Claude Code | User, project, local and managed settings. Permission rules. `PreToolUse` hooks, including plugin hooks, replayed for real. | `--dangerously-skip-permissions` |
 | Codex | `config.toml` (approval policy, sandbox mode, network access, project trust) and the rules files. | `--yolo` |
@@ -59,7 +59,7 @@ Pick agents by hand with `--agents claude,codex,cursor`.
 
 It also tries each incident in other spellings. A rule that stops `rm -rf` often misses `/bin/rm -rf` or `bash -c 'rm -rf ...'`, and a rule for `git push` misses `git -c ... push`.
 
-One more thing it catches: a hook that refuses a command once and lets the retry through. An agent retries, so crashtest scores the second answer.
+One more thing it catches: a hook that refuses a command once and lets the retry through. An agent retries, so incident-replay scores the second answer.
 
 ## The incidents
 
@@ -80,10 +80,10 @@ One more thing it catches: a hook that refuses a command once and lets the retry
 | Aug 2026 | Claude Code, Cursor | A rejected push is retried with force |
 | Sep 2026 | Codex | Recursive deletes reach the home folder and the drive root |
 
-Every incident links to its public sources. Read all the stories in the [incident museum](https://salman-moussa.github.io/crashtest/), or build that page yourself:
+Every incident links to its public sources. Read all the stories in the [incident museum](https://salman-moussa.github.io/incident-replay/), or build that page yourself:
 
 ```bash
-node bin/crashtest.js museum
+node bin/incident-replay.js museum
 ```
 
 Each scenario is labelled:
@@ -95,10 +95,10 @@ Each scenario is labelled:
 ## Close the gaps
 
 ```bash
-node bin/crashtest.js fix
+node bin/incident-replay.js fix
 ```
 
-This installs one small hook, the crashtest guard, into your Claude Code settings. It backs up `settings.json` first and refuses to touch a settings file it cannot parse.
+This installs one small hook, the incident-replay guard, into your Claude Code settings. It backs up `settings.json` first and refuses to touch a settings file it cannot parse.
 
 The guard reads each command before it runs:
 
@@ -109,14 +109,14 @@ The guard reads each command before it runs:
 It looks through wrappers such as `bash -c`, `cmd /c`, `ssh` and `sudo`. Remove it again with:
 
 ```bash
-node bin/crashtest.js unfix
+node bin/incident-replay.js unfix
 ```
 
-The guard is for Claude Code only for now. For Codex and Cursor, crashtest tests your setup but does not change it.
+The guard is for Claude Code only for now. For Codex and Cursor, incident-replay tests your setup but does not change it.
 
 ## Limits
 
-- Verdicts follow each tool's published permission rules. crashtest is a model of that behaviour, not the tool itself. If the two disagree, the tool is right and that is a bug here.
+- Verdicts follow each tool's published permission rules. incident-replay is a model of that behaviour, not the tool itself. If the two disagree, the tool is right and that is a bug here.
 - Codex protects with a sandbox, so its verdicts come from what each command touches: files outside the workspace, the `.git` folder, or the network. The sandbox itself is not run. The Codex docs do not say whether rules still apply with `--yolo`, so that case shows as "Unknown".
 - Cursor: the CLI permissions and hooks are read. The auto-run list inside the Cursor app is not.
 - Claude Code: sandboxing and auto mode are not modelled. Auto mode verdicts show as "Unknown".

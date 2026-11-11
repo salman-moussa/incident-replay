@@ -8,7 +8,7 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evaluate, ruleMatchesCommand } from './engine.js';
-import { decide } from '../guard/crashtest-guard.mjs';
+import { decide } from '../guard/incident-replay-guard.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const RANK = { deny: 3, ask: 2, allow: 1 };
@@ -153,7 +153,7 @@ export function runHandler(h, payload, { cwd, env, timeoutMs }) {
 }
 
 /** Ask every matching PreToolUse hook about one simulated call. deny > ask > allow, as in Claude Code. */
-export async function askHooks(config, { tool, command, mode, sessionId = 'crashtest' }, { env = process.env, timeoutMs = 15000 } = {}) {
+export async function askHooks(config, { tool, command, mode, sessionId = 'incident-replay' }, { env = process.env, timeoutMs = 15000 } = {}) {
   const result = { decision: null, reason: '', ran: 0, skipped: 0, errors: [] };
   const jobs = [];
   for (const h of config.hooks) {
@@ -163,8 +163,8 @@ export async function askHooks(config, { tool, command, mode, sessionId = 'crash
     const payload = {
       session_id: sessionId, transcript_path: '', cwd: config.cwd, permission_mode: mode,
       hook_event_name: 'PreToolUse', tool_name: tool,
-      tool_input: { command, description: 'crashtest simulated call, never executed' },
-      tool_use_id: 'toolu_crashtest',
+      tool_input: { command, description: 'incident-replay simulated call, never executed' },
+      tool_use_id: 'toolu_incident-replay',
     };
     jobs.push(runHandler(h, payload, { cwd: config.cwd, env, timeoutMs }));
   }
@@ -191,7 +191,7 @@ const stronger = (a, b) => ((RANK[b?.decision] || 0) > (RANK[a?.decision] || 0) 
 
 /**
  * Replay every scenario. Each one gets three verdicts: the configured mode, bypass mode
- * ("YOLO"), and bypass mode with the crashtest guard added. Nothing is executed.
+ * ("YOLO"), and bypass mode with the incident-replay guard added. Nothing is executed.
  */
 export async function replayClaude({ config, incidents, useHooks = true, env = process.env, onProgress = () => {} }) {
   const report = {
@@ -203,7 +203,7 @@ export async function replayClaude({ config, incidents, useHooks = true, env = p
   const count = (bucket, verdict) => { bucket[verdict] = (bucket[verdict] || 0) + 1; };
   const all = incidents.flatMap((incident) => incident.scenarios.map((scenario) => ({ incident, scenario })));
   // A fresh id per run, so hooks that keep per-session state see a new session each time.
-  const sessionId = `crashtest-${randomUUID()}`;
+  const sessionId = `incident-replay-${randomUUID()}`;
   const results = new Map();
 
   let next = 0;
@@ -229,7 +229,7 @@ export async function replayClaude({ config, incidents, useHooks = true, env = p
       for (const e of asked.errors) if (!report.hookErrors.includes(e)) report.hookErrors.push(e);
       const hook = asked.decision ? asked : null;
       const guard = decide(scenario.command, 'bypassPermissions');
-      const guardHook = guard && { decision: guard.decision, reason: `crashtest guard: ${guard.why}` };
+      const guardHook = guard && { decision: guard.decision, reason: `incident-replay guard: ${guard.why}` };
       results.set(scenario, {
         normal: evaluate({ ...call, mode: config.mode, hook }),
         yolo: evaluate({ ...call, mode: 'bypassPermissions', hook }),

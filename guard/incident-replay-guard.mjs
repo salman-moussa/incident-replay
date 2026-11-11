@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// crashtest guard: a Claude Code PreToolUse hook. One file, no dependencies.
+// incident-replay guard: a Claude Code PreToolUse hook. One file, no dependencies.
 // It reads the tool call from stdin and answers deny, ask, or nothing.
 // It never runs the command it is looking at.
 //
@@ -147,12 +147,12 @@ async function main() {
   const verdict = decide(input?.tool_input?.command, input?.permission_mode);
   if (!verdict) return;
   const reason = verdict.decision === 'deny'
-    ? `Blocked by crashtest guard: ${verdict.why}. Do not retry it in another form. If it is really needed, ask the user to run it themselves.`
-    : `crashtest guard: ${verdict.why}. Confirm only if you are sure.`;
+    ? `Blocked by incident-replay guard: ${verdict.why}. Do not retry it in another form. If it is really needed, ask the user to run it themselves.`
+    : `incident-replay guard: ${verdict.why}. Confirm only if you are sure.`;
   process.stdout.write(JSON.stringify({
     hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: verdict.decision, permissionDecisionReason: reason },
   }));
 }
 
 // A broken guard must never break the session, so every failure ends quietly with exit 0.
-if (basename(process.argv[1] || '') === 'crashtest-guard.mjs') main().catch(() => {});
+if (basename(process.argv[1] || '') === 'incident-replay-guard.mjs') main().catch(() => {});

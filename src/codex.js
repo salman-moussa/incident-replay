@@ -6,7 +6,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { splitCommand } from './shell.js';
-import { tokens } from '../guard/crashtest-guard.mjs';
+import { tokens } from '../guard/incident-replay-guard.mjs';
 
 export const codexDir = (env = process.env) => env.CODEX_HOME || join(homedir(), '.codex');
 
@@ -23,7 +23,7 @@ const WHY = {
 const program = (word) => String(word).replace(/\\/g, '/').split('/').pop().toLowerCase().replace(/\.exe$/, '');
 const norm = (path) => String(path).replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
 
-// ponytail: reads `key = value` lines under `[section]` headers, which is all crashtest
+// ponytail: reads `key = value` lines under `[section]` headers, which is all incident-replay
 // needs from config.toml. Swap in a real TOML parser if it ever needs arrays or tables.
 export function readToml(text) {
   const out = { top: {}, sections: {} };

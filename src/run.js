@@ -1,4 +1,4 @@
-// Runs the crash test for every agent found on this machine and merges the results.
+// Replays the incidents for every agent found on this machine and merges the results.
 
 import { existsSync } from 'node:fs';
 import { claudeAgent, configDir } from './claude.js';
@@ -21,7 +21,7 @@ export function detectAgents(env = process.env) {
  * Replay every scenario against each agent. Each agent gives a verdict for its normal mode
  * and for its skip-everything mode. Nothing is executed.
  */
-export async function crashTest({ cwd = process.cwd(), env = process.env, incidents, agents, useHooks = true, onProgress = () => {} }) {
+export async function replayAll({ cwd = process.cwd(), env = process.env, incidents, agents, useHooks = true, onProgress = () => {} }) {
   const ids = agents?.length ? agents : detectAgents(env);
   const unknown = ids.find((id) => !AGENTS[id]);
   if (unknown) throw new Error(`Unknown agent "${unknown}". Use one of: ${Object.keys(AGENTS).join(', ')}.`);

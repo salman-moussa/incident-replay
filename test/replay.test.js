@@ -5,21 +5,21 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { decide, isCriticalPath, judge } from '../guard/crashtest-guard.mjs';
+import { decide, isCriticalPath, judge } from '../guard/incident-replay-guard.mjs';
 import { askHooks, loadConfig, loadIncidents, matcherMatches } from '../src/claude.js';
 import { htmlMuseum, htmlReport, terminalSummary } from '../src/report.js';
-import { crashTest, detectAgents } from '../src/run.js';
+import { replayAll, detectAgents } from '../src/run.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const CLI = join(ROOT, 'bin', 'crashtest.js');
-const GUARD = join(ROOT, 'guard', 'crashtest-guard.mjs');
+const CLI = join(ROOT, 'bin', 'incident-replay.js');
+const GUARD = join(ROOT, 'guard', 'incident-replay-guard.mjs');
 const incidents = loadIncidents();
 const scenarios = incidents.flatMap((i) => i.scenarios);
 const slash = (p) => p.replace(/\\/g, '/');
 
 /** A throwaway config folder and project, so no test touches the real setup of any agent. */
 function sandbox(settings = {}) {
-  const base = mkdtempSync(join(tmpdir(), 'crashtest-'));
+  const base = mkdtempSync(join(tmpdir(), 'incident-replay-'));
   const home = join(base, 'claude');
   const cwd = join(base, 'project');
   mkdirSync(home);
@@ -130,7 +130,7 @@ if(cmd.includes('reset'))console.log(JSON.stringify({hookSpecificOutput:{hookEve
   assert.equal((await ask('git reset --hard')).decision, 'ask');
   assert.equal((await ask('npm test')).decision, null);
 
-  const report = await crashTest({ cwd: box.cwd, env: box.env, incidents });
+  const report = await replayAll({ cwd: box.cwd, env: box.env, incidents });
   assert.deepEqual(report.agents.map((a) => a.id), ['claude'], 'only the agent with a config folder is tested');
   assert.equal(report.scenarios, scenarios.length);
   assert.equal(find(report, 'destroy-auto-approve').verdicts.claude.yolo.verdict, 'blocked');
@@ -152,7 +152,7 @@ if(!existsSync(seen)){writeFileSync(seen,'');console.error('state your facts fir
     hooks: { PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: `node "${slash(hook)}"` }] }] },
   }));
   const one = [{ ...incidents[0], scenarios: [{ id: 'x', command: 'terraform destroy', kind: 'variant', effect: 'network', note: 'n' }] }];
-  const report = await crashTest({ cwd: box.cwd, env: box.env, incidents: one });
+  const report = await replayAll({ cwd: box.cwd, env: box.env, incidents: one });
   assert.ok(report.agents[0].notes.some((note) => /refused once by a hook/.test(note)));
   assert.equal(report.incidents[0].scenarios[0].verdicts.claude.yolo.verdict, 'runs');
 });
@@ -174,7 +174,7 @@ if(JSON.parse(s).command.includes('volumeDelete'))console.log(JSON.stringify({pe
   ] } }));
   assert.deepEqual(detectAgents(box.env), ['claude', 'codex', 'cursor']);
 
-  const report = await crashTest({ cwd: box.cwd, env: box.env, incidents });
+  const report = await replayAll({ cwd: box.cwd, env: box.env, incidents });
   const [, codex, cursor] = report.agents;
   assert.equal(codex.mode, 'workspace-write, never');
   assert.equal(find(report, 'destroy').verdicts.codex.normal.verdict, 'blocked');
@@ -191,12 +191,12 @@ if(JSON.parse(s).command.includes('volumeDelete'))console.log(JSON.stringify({pe
   const html = htmlReport(report);
   for (const name of ['Claude Code', 'Codex', 'Cursor']) assert.ok(html.includes(`<h2>${name}</h2>`));
   assert.match(terminalSummary(report), /Codex\n {2}Your mode \(workspace-write, never\)/);
-  await assert.rejects(() => crashTest({ cwd: box.cwd, env: box.env, incidents, agents: ['nope'] }), /Unknown agent/);
+  await assert.rejects(() => replayAll({ cwd: box.cwd, env: box.env, incidents, agents: ['nope'] }), /Unknown agent/);
 });
 
 test('reports render every command safely', async () => {
   const box = sandbox();
-  const report = await crashTest({ cwd: box.cwd, env: box.env, incidents });
+  const report = await replayAll({ cwd: box.cwd, env: box.env, incidents });
   const totals = report.agents[0].totals;
   assert.equal(totals.normal.runs || 0, 0, 'default Claude Code asks or blocks everything here');
   assert.ok(totals.yolo.runs > 0, 'bypass mode with no rules lets most of it run');
@@ -205,7 +205,7 @@ test('reports render every command safely', async () => {
   assert.ok(html.includes('psql &quot;$DATABASE_URL&quot;'));
   assert.ok(html.includes(`${report.scenarios} commands from ${incidents.length} public incidents`));
   assert.ok(htmlMuseum(incidents).includes(incidents[0].title));
-  assert.match(terminalSummary(report), /YOLO mode \+ crashtest guard/);
+  assert.match(terminalSummary(report), /YOLO mode \+ incident-replay guard/);
 });
 
 test('the CLI runs, and fix and unfix change only the sandboxed settings', () => {
@@ -229,8 +229,8 @@ test('the CLI runs, and fix and unfix change only the sandboxed settings', () =>
   let settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
   assert.equal(settings.theme, 'dark');
   assert.equal(settings.hooks.PreToolUse.length, 2, 'fix is idempotent and keeps existing hooks');
-  assert.ok(existsSync(join(box.home, 'hooks', 'crashtest-guard.mjs')));
-  assert.equal(readdirSync(box.home).filter((f) => f.includes('crashtest-backup')).length, 1);
+  assert.ok(existsSync(join(box.home, 'hooks', 'incident-replay-guard.mjs')));
+  assert.equal(readdirSync(box.home).filter((f) => f.includes('incident-replay-backup')).length, 1);
 
   const after = JSON.parse(cli(box, 'run', '--json').stdout).agents[0];
   assert.equal(after.totals.yolo.runs || 0, 0, 'the installed guard is found and replayed as a real hook');
@@ -239,7 +239,7 @@ test('the CLI runs, and fix and unfix change only the sandboxed settings', () =>
   assert.equal(cli(box, 'unfix').status, 0);
   settings = JSON.parse(readFileSync(settingsPath, 'utf8'));
   assert.equal(settings.hooks.PreToolUse.length, 1);
-  assert.ok(!existsSync(join(box.home, 'hooks', 'crashtest-guard.mjs')));
+  assert.ok(!existsSync(join(box.home, 'hooks', 'incident-replay-guard.mjs')));
 
   assert.equal(cli(box, 'museum', '--out', join(box.base, 'site', 'index.html')).status, 0);
   assert.equal(cli(box, 'list').stdout.trim().split('\n').length, incidents.length);

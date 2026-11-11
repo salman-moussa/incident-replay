@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node bin/crashtest.js museum --out site/index.html
+      - run: node bin/incident-replay.js museum --out site/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

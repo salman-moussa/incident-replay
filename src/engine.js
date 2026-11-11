@@ -3,7 +3,7 @@
 // It follows the published Claude Code permission docs. It is a model, not Claude Code itself.
 
 import { allSubcommands, stripWrappers } from './shell.js';
-import { removesCriticalPath, tokens } from '../guard/crashtest-guard.mjs';
+import { removesCriticalPath, tokens } from '../guard/incident-replay-guard.mjs';
 
 const READ_ONLY = new Set(['ls', 'cat', 'echo', 'pwd', 'head', 'tail', 'grep', 'find', 'wc', 'which', 'diff', 'stat', 'du', 'cd']);
 const GIT_READ_ONLY = /^git\s+(?:status|log|diff|show|rev-parse|ls-files|blame)\b/;

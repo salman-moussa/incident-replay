@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { runHandler } from './claude.js';
 import { patternMatches } from './engine.js';
 import { allSubcommands } from './shell.js';
-import { tokens } from '../guard/crashtest-guard.mjs';
+import { tokens } from '../guard/incident-replay-guard.mjs';
 
 export const cursorDir = (env = process.env) => env.CURSOR_CONFIG_DIR || join(homedir(), '.cursor');
 
@@ -81,7 +81,7 @@ async function askHooks(hooks, command, cwd, env) {
     }
     const payload = {
       hook_event_name: 'beforeShellExecution', command, cwd, sandbox: false,
-      conversation_id: 'crashtest', generation_id: 'crashtest', workspace_roots: [cwd],
+      conversation_id: 'incident-replay', generation_id: 'incident-replay', workspace_roots: [cwd],
     };
     const result = await runHandler({ command: hook.command, timeout: hook.timeout, source: 'cursor hook' }, payload, { cwd: hook.cwd, env, timeoutMs: 15000 });
     const answer = readAnswer(result, hook);
