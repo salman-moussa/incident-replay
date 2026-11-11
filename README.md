@@ -11,11 +11,7 @@ Nothing is executed. Each command is sent to your rules and hooks as a simulated
 ## Run it
 
 ```bash
-git clone https://github.com/salman-moussa/incident-replay
-```
-
-```bash
-node incident-replay/bin/incident-replay.js --open
+npx incident-replay --open
 ```
 
 It needs Node 20 or newer and has no dependencies. Nothing leaves your machine.
@@ -83,7 +79,7 @@ One more thing it catches: a hook that refuses a command once and lets the retry
 Every incident links to its public sources. Read all the stories in the [incident museum](https://salman-moussa.github.io/incident-replay/), or build that page yourself:
 
 ```bash
-node bin/incident-replay.js museum
+npx incident-replay museum
 ```
 
 Each scenario is labelled:
@@ -95,7 +91,7 @@ Each scenario is labelled:
 ## Close the gaps
 
 ```bash
-node bin/incident-replay.js fix
+npx incident-replay fix
 ```
 
 This installs one small hook, the incident-replay guard, into your Claude Code settings. It backs up `settings.json` first and refuses to touch a settings file it cannot parse.
@@ -109,7 +105,7 @@ The guard reads each command before it runs:
 It looks through wrappers such as `bash -c`, `cmd /c`, `ssh` and `sudo`. Remove it again with:
 
 ```bash
-node bin/incident-replay.js unfix
+npx incident-replay unfix
 ```
 
 The guard is for Claude Code only for now. For Codex and Cursor, incident-replay tests your setup but does not change it.
